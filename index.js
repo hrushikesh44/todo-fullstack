@@ -1,30 +1,34 @@
 const express = require("express");
 const jwt =require("jsonwebtoken");
-const JWT_SECRET = "hrushikesh44"
-const { UserModel, TodoModel } = require("./db")
+const { UserModel, TodoModel } = require("./db");
+const { auth, JWT_SECRET } = require("./auth")
+const  mongoose  = require("mongoose");
 const app = express();
+
+mongoose.connect("mongodb+srv://hrushikesh44:zm09jvPBTafrOSC7@cluster0.2lasb.mongodb.net/todo-app");
+app.use(express.json());
 
 app.post("/signup", async function(req, res){
     const email = req.body.email;
     const username = req.body.username;
     const password = req.body.password;
     
-    await UserModel.insert({
-        email, 
-        username, 
-        password
-    })
+    await UserModel.create({
+        email: email, 
+        username: username, 
+        password: password
+    });
 
     res.json({
         message: "you've signed up"
     })
-})
+});
 
 app.post("/signin", async function(req, res){
     const email = req.body.email;
     const password = req.body.password;
 
-    const response = UserModel.findOne({
+    const response = await UserModel.findOne({
         email: email,
         password: password
     })
@@ -32,7 +36,7 @@ app.post("/signin", async function(req, res){
     if(response){
         const token = jwt.sign({
             id: response._id.toString()
-        })
+        },JWT_SECRET)
 
         res.json({
             token
@@ -45,13 +49,32 @@ app.post("/signin", async function(req, res){
 })
 
 
+app.post("/todo", auth, async function(req, res) {
+    const task = req.body.task;
+    const userId = req.userId;
+    const done = req.body.done;
 
-app.post("/todo", function(req, res){
-    
+    await TodoModel.create({
+        task: task,
+        done: done,
+        userId: userId
+    })
+
+    res.json({
+        message: "successfully added"
+    })
 })
 
-app.get("/todos", function(req, res){
-    
+app.get("/todos", auth, async function(req, res) {
+    const userId = req.userId;
+    await TodoModel.findOne({
+        userId
+    })
+
+    res.json({
+        userId,
+        message: "data fetched"
+    })
 })
 
 app.listen(3000);
