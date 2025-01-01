@@ -55,25 +55,25 @@ app.post("/todo", auth, async function(req, res) {
     const done = req.body.done;
 
     await TodoModel.create({
-        task: task,
-        done: done,
-        userId: userId
+        userId,
+        task,
+        done
     })
 
     res.json({
+        userId,
         message: "successfully added"
     })
 })
 
 app.get("/todos", auth, async function(req, res) {
     const userId = req.userId;
-    await TodoModel.findOne({
+    const todos = await TodoModel.find({
         userId
     })
 
     res.json({
-        userId,
-        message: "data fetched"
+        todos
     })
 })
 
