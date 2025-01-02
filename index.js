@@ -4,12 +4,27 @@ const jwt =require("jsonwebtoken");
 const { UserModel, TodoModel } = require("./db");
 const { auth, JWT_SECRET } = require("./auth")
 const  mongoose  = require("mongoose");
-const app = express();
+const { z } = require("zod");
 
+const app = express();
 mongoose.connect("mongodb+srv://hrushikesh44:zm09jvPBTafrOSC7@cluster0.2lasb.mongodb.net/todo-app");
 app.use(express.json());
 
 app.post("/signup", async function(req, res){
+    const requiredBody = z.object({
+        email: z.email(),
+        username: z.string().min(3).max(20),
+        password: z.string().min(4).max(15)
+    })
+
+    const parsedBody = requiredBody.safeParse(req.body);
+    if(!parsedBody.success){
+        res.json({
+            message: "Incorrect format",
+            error: parsedBody.error
+        })
+    }
+
     const email = req.body.email;
     const username = req.body.username;
     const password = req.body.password;
@@ -19,8 +34,8 @@ app.post("/signup", async function(req, res){
 
         await UserModel.create({
             email: email, 
-            username: hashedPassword, 
-            password: password
+            username: username, 
+            password: hashedPassword
         });
     
         res.json({
@@ -35,6 +50,21 @@ app.post("/signup", async function(req, res){
 });
 
 app.post("/signin", async function(req, res){
+
+    const requiredBody =z.object({
+        email: z.email(),
+        password: z.string().min(4).max(15)
+    })
+
+    const parsedBody = requiredBody.safeParse(req.body)
+
+    if(!parsedBody.success){
+        res.json({
+            message: "incorrect format",
+            error: parsedBody.error
+        })
+    }
+    
     const email = req.body.email;
     const password = req.body.password;
 
