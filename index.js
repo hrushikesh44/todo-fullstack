@@ -7,7 +7,7 @@ const  mongoose  = require("mongoose");
 const { z } = require("zod");
 
 const app = express();
-mongoose.connect("mongodb+srv://hrushikesh44:zm09jvPBTafrOSC7@cluster0.2lasb.mongodb.net/todo-app");
+mongoose.connect("MONGODB_URL");
 app.use(express.json());
 
 app.post("/signup", async function(req, res){
